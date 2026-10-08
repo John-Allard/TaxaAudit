@@ -97,7 +97,7 @@ def run(args: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(prog="badtaxafinder")
+    parser = argparse.ArgumentParser(prog="taxaaudit")
     subparsers = parser.add_subparsers(dest="command", required=True)
     download = subparsers.add_parser("download-taxonomy")
     download.add_argument("--out", required=True)

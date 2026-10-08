@@ -1,6 +1,9 @@
-# Bad Taxa Finder
+# TaxaAudit
 
-Bad Taxa Finder identifies NCBI taxonomic groups whose sampled members are
+**TaxaAudit: statistical identification of taxa recurrently contradicted by
+published molecular phylogenies**
+
+TaxaAudit identifies NCBI taxonomic groups whose sampled members are
 recurrently contradicted as a clade across independent published molecular
 phylogenies. It does **not** construct a replacement taxonomy. Its primary
 output is a conservative list of exact NCBI taxids for which monophyly should
@@ -30,8 +33,8 @@ from the input trees.
 Python 3.10 or later is recommended.
 
 ```bash
-git clone https://github.com/John-Allard/BadTaxaFinder.git
-cd BadTaxaFinder
+git clone https://github.com/John-Allard/TaxaAudit.git
+cd TaxaAudit
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
@@ -45,13 +48,13 @@ scikit-learn.
 Download and unpack an NCBI `taxdump.tar.gz`, or let the command do it:
 
 ```bash
-badtaxafinder download-taxonomy --out data/ncbi_taxonomy
+taxaaudit download-taxonomy --out data/ncbi_taxonomy
 ```
 
 Then run the complete workflow:
 
 ```bash
-badtaxafinder run \
+taxaaudit run \
   --trees /path/to/newick_trees \
   --taxonomy data/ncbi_taxonomy \
   --out outputs/my_scan
@@ -70,7 +73,7 @@ path	publication
 ```
 
 ```bash
-badtaxafinder run \
+taxaaudit run \
   --manifest trees.tsv \
   --taxonomy data/ncbi_taxonomy \
   --out outputs/my_scan
@@ -118,7 +121,7 @@ The study trees themselves are not redistributed. Users with those trees can
 reproduce the analysis using:
 
 ```bash
-badtaxafinder run \
+taxaaudit run \
   --manifest timetree_studies.tsv \
   --taxonomy taxonomy_cache_20260722 \
   --max-templates 2000 \

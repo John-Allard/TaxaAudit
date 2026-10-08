@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "badtaxafinder"
+name = "taxaaudit"
 version = "0.1.0"
-description = "Detect NCBI taxonomic groups recurrently contradicted by published phylogenies"
+description = "Statistical identification of taxa recurrently contradicted by published molecular phylogenies"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -22,11 +22,10 @@ dependencies = [
 ]
 
 [project.scripts]
-badtaxafinder = "badtaxafinder.cli:main"
+taxaaudit = "taxaaudit.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

@@ -2,7 +2,7 @@ from io import StringIO
 
 from Bio import Phylo
 
-from badtaxafinder.tree import IndexedTree, classify_group, descendant_counts
+from taxaaudit.tree import IndexedTree, classify_group, descendant_counts
 
 
 def classify(newick, members):
@@ -22,4 +22,3 @@ def test_contradicted_group():
 
 def test_polytomy_is_compatible_unresolved():
     assert classify("(a,b,c,d);", ["a", "b"]) == "compatible_unresolved"
-
