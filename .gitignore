@@ -1,0 +1,45 @@
+# === research-project (Codex) ===
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+.mamba/
+.micromamba/
+envs/
+runtime/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Generated research artifacts (untracked by designated location)
+data/
+data/processed/
+outputs/
+displays/
+logs/
+tmp/
+scratch/
+campaigns/**/data/
+campaigns/**/outputs/
+campaigns/**/displays/
+campaigns/**/logs/
+campaigns/**/runtime/
+campaigns/**/tmp/
+campaigns/**/scratch/
+*.pt
+*.npy
+*.npz
+*.pkl
+
+# Editor metadata
+.DS_Store
+.vscode/
+.idea/
+
+# === end research-project (Codex) ===

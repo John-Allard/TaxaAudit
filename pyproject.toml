@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "badtaxafinder"
+version = "0.1.0"
+description = "Detect NCBI taxonomic groups recurrently contradicted by published phylogenies"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  {name = "John Allard", email = "john.allard@temple.edu"},
+  {name = "Jack Craig"},
+  {name = "Sudhir Kumar"},
+]
+dependencies = [
+  "biopython>=1.81",
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "scipy>=1.10",
+  "scikit-learn>=1.3",
+]
+
+[project.scripts]
+badtaxafinder = "badtaxafinder.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

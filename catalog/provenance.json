@@ -1,0 +1,23 @@
+{
+  "study_tree_files": 5865,
+  "source_publications": 5072,
+  "study_collection": "TimeTree molecular study-tree collection",
+  "ncbi_taxonomy_download_date": "2026-07-22",
+  "ncbi_taxdump_sha256": "9706198c129c6b70ec591009431f742649b939d5de86e102d469e6928034a1fe",
+  "represented_ncbi_groups": 26291,
+  "groups_in_filtered_fdr_family": 5395,
+  "selected_groups": 516,
+  "selected_minimum_informative_publications": 5,
+  "fdr_q": 0.05,
+  "detection_templates": 2000,
+  "reductions_per_template": 40,
+  "detection_folds": 5,
+  "background_folds": 5,
+  "rho_grid_size": 201,
+  "bootstrap_replicates": 99999,
+  "bootstrap_screen_q": 0.30,
+  "detection_seed": 20260821,
+  "background_seed": 20260728,
+  "bootstrap_seed": 20260728,
+  "supported_original_constraint_deletions_sha256": "f182ef48261b56ef07662ae4f90afbc97d7af1f084143db0b0935f1a09da0f9f"
+}

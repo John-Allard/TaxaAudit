@@ -1,0 +1,8 @@
+{
+  "represented_ncbi_groups": 26291,
+  "selected_minimum_informative_publications": 5,
+  "groups_in_filtered_fdr_family": 5395,
+  "selected_constraint_exceptions": 516,
+  "selection_rule": "independent publication-count filter followed by BH q <= 0.05",
+  "groups_below_filter": 20896
+}
