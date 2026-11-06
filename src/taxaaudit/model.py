@@ -216,7 +216,8 @@ def fit_group(frame: pd.DataFrame, rho_grid: np.ndarray):
     terms = y[:, None]*(np.log(probability)-np.log(null)) + (1-y[:, None])*(
         np.log1p(-probability)-np.log1p(-null)
     )
-    log_lr = terms.sum(axis=0)
+    weights = study_weights(frame)
+    log_lr = (terms * weights[:, None]).sum(axis=0)
     best = int(np.argmax(log_lr))
     statistic = max(0.0, 2*float(log_lr[best]))
     first = frame.iloc[0]
@@ -237,6 +238,18 @@ def fit_group(frame: pd.DataFrame, rho_grid: np.ndarray):
     }, float(log_lr[best])
 
 
+def study_weights(frame: pd.DataFrame) -> np.ndarray:
+    """Fixed publication weights, normalized within a focal group.
+
+    Weights alter the evidence statistic, not the Bernoulli probability model.
+    Unit or constant weights reproduce the unweighted statistic exactly.
+    """
+    w = frame.get("study_weight", pd.Series(1.0, index=frame.index)).to_numpy(float)
+    if not np.all(np.isfinite(w)) or np.any(w <= 0):
+        raise ValueError("study weights must be finite and strictly positive")
+    return w / w.mean()
+
+
 def bootstrap_p(
     frame: pd.DataFrame, rho_grid: np.ndarray, observed: float,
     replicates: int, seed: int,
@@ -249,8 +262,9 @@ def bootstrap_p(
     null = np.clip(f[:, None], 1e-12, 1-1e-12)
     zero = np.log1p(-probability) - np.log1p(-null)
     one = np.log(probability) - np.log(null)
-    base = zero.sum(axis=0)
-    slope = one-zero
+    weights = study_weights(frame)
+    base = (zero * weights[:, None]).sum(axis=0)
+    slope = (one-zero) * weights[:, None]
     rng = np.random.default_rng(seed)
     exceed = 0
     remaining = replicates
@@ -302,7 +316,14 @@ def test_recurrence(
         evidence.one_sided_asymptotic_p.to_numpy(float)
     )
     evidence["parametric_bootstrap_p"] = np.nan
-    screen = evidence.asymptotic_bh_q_full_taxon_universe.le(bootstrap_screen_q)
+    weighted = "study_weight" in observations and observations.study_weight.nunique() > 1
+    # A weighted likelihood statistic does not have the standard chi-square
+    # approximation. Calibrate every observed group rather than use that screen.
+    screen = (evidence.informative_publications.gt(0) if weighted else
+              evidence.asymptotic_bh_q_full_taxon_universe.le(bootstrap_screen_q))
+    if weighted:
+        evidence["one_sided_asymptotic_p"] = np.nan
+        evidence["asymptotic_bh_q_full_taxon_universe"] = np.nan
     for row in evidence[screen].itertuples(index=False):
         if int(row.taxid) not in cache:
             continue
@@ -349,6 +370,8 @@ def test_recurrence(
         "groups_in_filtered_fdr_family": int(mask.sum()),
         "selected_constraint_exceptions": len(selected),
         "background_prior_strength": strength,
+        "metadata_study_weights_used": bool(weighted),
+        "weighting_scope": "recurrence statistic and matching null simulations only",
         **background_metrics,
     }
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")

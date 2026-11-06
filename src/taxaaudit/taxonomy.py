@@ -33,6 +33,7 @@ class Taxonomy:
     aliases: dict[str, set[int]]
     merged: dict[int, int]
     deleted: set[int]
+    target_ranks: frozenset[str] | None = None
 
     @classmethod
     def from_taxdump(cls, directory: str | Path) -> "Taxonomy":
@@ -120,6 +121,12 @@ class Taxonomy:
 
     def testable_ancestors(self, species: int) -> tuple[int, ...]:
         lineage = self.lineage(species)
+        if self.target_ranks is not None:
+            return tuple(node for node in lineage
+                         if self.rank.get(node) in self.target_ranks
+                         and self.name.get(node)
+                         and not any(term in self.name[node].casefold()
+                                     for term in PLACEHOLDER_TERMS))
         result: list[int] = []
         below_family = False
         for node in reversed(lineage):

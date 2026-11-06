@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 import pandas as pd
+import numpy as np
 
 from .model import fit_detection_probabilities, test_recurrence
 from .observations import (
@@ -22,6 +23,8 @@ def add_run_arguments(parser: argparse.ArgumentParser) -> None:
     source.add_argument("--manifest", help="TSV with path and publication columns")
     parser.add_argument("--taxonomy", required=True, help="unpacked NCBI taxdump directory")
     parser.add_argument("--out", required=True)
+    parser.add_argument("--ranks", help="comma-separated explicit NCBI ranks; default is family and below")
+    parser.add_argument("--study-weights", help="optional TSV: publication, weight. Unlisted publications receive 1; weights must be positive and fixed independently of focal outcomes")
     parser.add_argument("--max-templates", type=int, default=2000)
     parser.add_argument("--draws-per-template", type=int, default=40)
     parser.add_argument("--detection-folds", type=int, default=5)
@@ -50,6 +53,12 @@ def run(args: argparse.Namespace) -> None:
     output = Path(args.out).resolve()
     output.mkdir(parents=True, exist_ok=True)
     taxonomy = Taxonomy.from_taxdump(args.taxonomy)
+    if args.ranks:
+        ranks = frozenset(s.strip() for s in args.ranks.split(',') if s.strip())
+        unknown = ranks - set(taxonomy.rank.values())
+        if not ranks or unknown:
+            raise ValueError(f"invalid or unknown NCBI ranks: {sorted(unknown)}")
+        taxonomy.target_ranks = ranks
     entries = load_manifest(args.trees, args.manifest)
     if not entries:
         raise SystemExit("no Newick trees found")
@@ -70,6 +79,22 @@ def run(args: argparse.Namespace) -> None:
         reductions, tree_frame, publication_frame, args.detection_folds,
         args.detection_seed, detection_dir,
     )
+    if args.study_weights:
+        weights = pd.read_csv(args.study_weights, sep="\t")
+        if not {"publication", "weight"} <= set(weights):
+            raise ValueError("study weights require publication and weight columns")
+        if weights.publication.duplicated().any():
+            raise ValueError("duplicate publication in weights file")
+        weights["weight"] = pd.to_numeric(weights.weight, errors="raise")
+        if not np.isfinite(weights.weight).all() or (weights.weight <= 0).any():
+            raise ValueError("weights must be finite and positive")
+        known = {publication for _, publication in entries}
+        if not set(weights.publication) <= known:
+            raise ValueError("weights file contains publications absent from the manifest")
+        lookup = weights.set_index("publication").weight
+        predictions["study_weight"] = predictions.publication.map(lookup).fillna(1.0)
+        predictions[["publication", "study_weight"]].drop_duplicates().to_csv(
+            output / "effective_study_weights.tsv", sep="\t", index=False)
     selected = test_recurrence(
         predictions, universe, args.background_folds, args.rho_grid_size,
         args.bootstrap_replicates, args.bootstrap_screen_q,

@@ -92,6 +92,27 @@ catalog/constraint_changes.json
 catalog/all_group_evidence.tsv
 ```
 
+## Optional study weights and higher ranks
+
+The default analysis uses no external metadata-based study weights. Its background
+and detection probabilities already account for evidence within the supplied trees.
+For an exploratory weighted analysis, add `--study-weights weights.tsv`, with
+tab-separated `publication` and `weight` columns. Publication identifiers must
+match the manifest. Values must be finite and positive; unlisted publications
+receive weight one. Relative weights multiply publication log-likelihoods after
+normalization to mean one within each group. The null simulations use the same
+weights, and weighted runs bootstrap all observed groups rather than using an
+unweighted asymptotic screen. Weights neither add replication nor change the
+background and detection fits. Prespecify weights independently of focal outcomes.
+This option is unit-tested but has not received the released analysis's full
+end-to-end validation and was not used for the released catalog.
+
+To scan explicit higher ranks, supply for example
+`--ranks superfamily,order,class,phylum`. The default remains family and below.
+Rank-specific models and calibration should be checked before treating higher-rank
+results as a validated extension. See the
+`campaigns/higher-ranks-and-study-weights/` record for the separate pilot scan.
+
 ## Reproduce the released NCBI scan
 
 The released catalog in [`catalog/`](catalog/) was generated from:
