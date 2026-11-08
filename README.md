@@ -1,27 +1,48 @@
-# TaxaAudit
+# TaxaAudit: A statistical model of consensus in phylogenetics identifies non-monophyletic taxa
 
-**TaxaAudit: statistical identification of taxa recurrently contradicted by
-published molecular phylogenies**
+TaxaAudit identifies taxonomic groups whose monophyly is repeatedly contradicted
+in a sample of published phylogenies, accounting for background taxonomic
+conflict and species sampling. Its primary output is a **catalog of flagged
+taxa**: groups with statistical evidence of recurrent contradiction of monophyly.
+The catalog helps researchers identify taxa whose monophyly should not be
+assumed in downstream analyses. It does not prescribe a replacement taxonomy.
 
-TaxaAudit identifies NCBI taxonomic groups whose sampled members are
-recurrently contradicted as a clade across published molecular
-phylogenies. It does **not** construct a replacement taxonomy. Its primary
-output is a catalog of flagged taxa: NCBI groups with statistical evidence of
-recurrent contradiction of monophyly.
+## Contents
 
-The statistical model separates three quantities for NCBI group `g` in
-publication `i`:
+- [Overview](#overview)
+- [Installation](#installation)
+- [Run on a directory of Newick trees](#run-on-a-directory-of-newick-trees)
+- [Upper confidence limits on recurrent contradiction](#upper-confidence-limits-on-recurrent-contradiction)
+- [Optional study weights and higher ranks](#optional-study-weights-and-higher-ranks)
+- [Study data and released results](#study-data-and-released-results)
 
-```text
-P(contradiction) = f_ig + (1 - f_ig) d_ig rho_g
-```
+## Overview
 
-- `f_ig` is a cross-fitted estimate of ordinary apparent conflict expected
-  from the publication, rank, and focal-group sampling.
-- `d_ig` is a cross-fitted estimate of whether the publication's species
-  sampling could expose a real violation.
-- `rho_g` is the recurring group-specific contradiction tendency fitted across
-  publications.
+![Figure 1. TaxaAudit workflow, showing the overall analysis, the Balaenoptera example, and how a publication contributes to a group test.](docs/figures/figure_1.png)
+
+**Figure 1. Statistical identification of NCBI groups that are repeatedly
+contradicted by published phylogenies.** **A:** Overview of the analysis.
+**B:** The genus *Balaenoptera* followed through the procedure: 19 of 31
+informative publications contradicted its monophyly.
+**C:** A publication's support or contradiction of monophyly is considered
+together with its expected background conflict and the probability that its
+species sampling could expose a violation. Compatible but unresolved trees
+contribute no outcome.
+
+For publication $i$ and group $g$, $Y_{ig}=1$ denotes contradiction of monophyly
+and $Y_{ig}=0$ denotes recovered monophyly. The model is
+
+$$
+\Pr(Y_{ig}=1\mid\rho_g)=f_{ig}+(1-f_{ig})D_{ig}\rho_g.
+$$
+
+- $f_{ig}$ is the expected probability of background conflict, estimated from
+  other groups of the same rank in the publication and adjusted for focal-group
+  sampling.
+- $D_{ig}$ is the probability that the publication's species sampling would
+  expose a real violation.
+- $\rho_g$ is the recurrence strength fitted for the group and shared across
+  its informative publications.
 
 The repository contains the complete fitting workflow. Fitted machine-learning
 objects are intentionally not committed: the background and detection models
@@ -94,11 +115,13 @@ catalog/publication_evidence.tsv
 ```
 
 The first file is the catalog of flagged taxa. Its filename retains the earlier
-term `deletions` for compatibility. Excluding a flagged taxon's monophyly
-requirement does **not** remove any species from a tree or dataset. See
+term `deletions` for compatibility. **Targeted exclusion** means omitting a
+flagged taxon's exact monophyly requirement when evaluating the taxonomy or
+using it to guide tree inference. All species and the monophyly requirements
+of unflagged ancestors and descendants are retained. See
 [`catalog/README.md`](catalog/README.md) for the bundled results and file formats.
 
-## Upper confidence limits on recurrence
+## Upper confidence limits on recurrent contradiction
 
 After a run, calculate an upper confidence limit for every taxon with informative
 publications:
@@ -130,16 +153,18 @@ The observation table needs `taxid`, `name`, `rank`, `publication` (or `source`)
 `cross_study_detection_probability`, and `mean_sampled_members`. Each row is
 one informative observation of a taxon in a publication. The universe table
 needs `taxid`, `name`, and `rank`, and the flagged catalog needs `taxid`.
-The first two probability columns are fitted values, not raw conflict fractions.
+The background and detection probability columns contain fitted values, not raw
+conflict fractions.
 Older runs without `publication_evidence.tsv` need their saved fitted observations
 or a new run. Upper limits with nonuniform publication weights are not supported.
 
-The limits are approximate upper endpoints of **individual conditional 95%
-confidence sets** for the recurrence parameter. They condition on the fitted
-background/detection probabilities and independent publication outcomes. They
-are not probabilities of monophyly or a simultaneous confidence guarantee across
-all taxa. Low limits distinguish well-sampled groups with little evidence of
-recurrent contradiction from groups with too little evidence to constrain it.
+The limits summarize how strongly the available study trees constrain the
+possibility of recurrent contradiction. They help distinguish groups with
+substantial evidence and little contradiction from groups that are merely
+poorly sampled. They are approximate upper endpoints of **individual conditional
+95% confidence sets** for $\rho_g$, assuming the fitted background and detection
+probabilities and independent publication outcomes. They are not probabilities
+of monophyly or a simultaneous confidence guarantee across all taxa.
 See the [released upper-limit data](catalog/UPPER_LIMITS.md) for interpretation,
 numerical settings, and column definitions.
 
@@ -163,19 +188,19 @@ To scan explicit higher ranks, supply for example
 Rank-specific models and calibration should be checked before treating higher-rank
 results as a validated extension.
 
-## Reproduce the released NCBI scan
+## Study data and released results
 
-The released catalog in [`catalog/`](catalog/) was generated from:
+The study trees are available from [TimeTree](https://timetree.org/).
+
+The released results in [`catalog/`](catalog/) use:
 
 - 5,865 molecular study-tree files representing 5,072 source publications in
   the TimeTree literature collection;
-- the NCBI Taxonomy downloaded **July 22, 2026**;
-- NCBI taxdump SHA-256
-  `9706198c129c6b70ec591009431f742649b939d5de86e102d469e6928034a1fe`;
+- the NCBI Taxonomy downloaded **22 July 2026**;
 - tests of named NCBI groups at the family level and below, including named
   unranked clades but excluding administrative placeholder groups;
-- 2,000 contradicted complete-tree/group templates, stratified by rank and
-  tree size, with 40 reductions per template;
+- 2,000 examples of taxonomic groups contradicted in complete study trees,
+  sampled across ranks and tree sizes, each with 40 reduced species samples;
 - five taxonomic-region folds for production detection probabilities;
 - five group-held-out folds for the background sampling model;
 - a 201-point grid for `rho` from 0 through 1;
@@ -195,49 +220,3 @@ adds the upper-limit results for the same 26,291 taxa: 18,109 have informative
 publications and calculated limits, while 8,182 are explicitly marked as lacking
 informative publications. It includes membership in the unchanged 516-taxon
 flagged catalog.
-
-The study trees themselves are not redistributed. Users with those trees can
-reproduce the analysis using:
-
-```bash
-taxaaudit run \
-  --manifest timetree_studies.tsv \
-  --taxonomy taxonomy_cache_20260722 \
-  --max-templates 2000 \
-  --draws-per-template 40 \
-  --detection-folds 5 \
-  --background-folds 5 \
-  --rho-grid-size 201 \
-  --bootstrap-replicates 99999 \
-  --bootstrap-screen-q 0.30 \
-  --filter-min 2 \
-  --filter-max 20 \
-  --fdr-q 0.05 \
-  --detection-seed 20260821 \
-  --background-seed 20260728 \
-  --bootstrap-seed 20260728 \
-  --out reproduced_catalog
-```
-
-## Interpretation
-
-A flagged taxon has evidence of recurrent contradiction of monophyly in the
-sampled molecular phylogenetics literature. Flagging supports excluding that
-taxon's exact monophyly requirement in applications that rely on it. It does
-not identify a unique replacement group, prove a particular biological mechanism, or
-establish that unflagged groups are monophyletic. Groups with insufficient
-published sampling are evidence-limited rather than confirmed.
-
-## Paper
-
-The accompanying manuscript is in preparation. A link to the paper and its
-supplementary methods will be added here when a public version is available.
-
-## Development
-
-Run the automated tests from the repository root:
-
-```bash
-pip install pytest
-python -m pytest
-```

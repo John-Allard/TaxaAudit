@@ -1,11 +1,11 @@
-# Recurrence upper limits
+# Upper confidence limits on recurrent contradiction
 
 `recurrence_upper_limits.tsv` supplements the catalog of flagged taxa. It uses
 the same 5,865 molecular TimeTree study trees, 5,072 source publications, and NCBI
 Taxonomy downloaded on 22 July 2026. Of 26,291 represented taxa, 18,109 have
 informative publications and calculated limits; 8,182 have no informative
 publications and missing limits. The flag column identifies the same 516 taxa
-as the flagged-taxon catalog. No additional threshold for selecting supported
+as the catalog of flagged taxa. No additional threshold for selecting supported
 taxa is imposed.
 
 ## Interpretation and calculation
@@ -49,7 +49,7 @@ places. When rho=1 is accepted, the upper endpoint is one without further search
 
 | Column | Meaning |
 |---|---|
-| `taxid`, `name`, `rank` | Identity in the frozen NCBI taxonomy |
+| `taxid`, `name`, `rank` | Identity in the NCBI taxonomy snapshot |
 | `informative_publications` | Number of informative publication observations |
 | `contradicted_publications` | Observations contradicting the group's monophyly |
 | `monophyletic_publications` | Observations displaying the group as a clade |
@@ -63,7 +63,7 @@ places. When rho=1 is accepted, the upper endpoint is one without further search
 | `evaluated_rho_values` | Number of candidate values evaluated |
 | `endpoint_grid_padding` | Upward padding for a finite endpoint |
 | `evidence_status` | Informative observations or no informative publications |
-| `currently_flagged_recurrent_nonmonophyly` | Membership in the 516-taxon flagged catalog |
+| `currently_flagged_recurrent_nonmonophyly` | Membership in the catalog of 516 flagged taxa |
 
 For taxa without informative observations, publication counts are zero and
 fitted recurrence and limits are missing. No observation is not evidence of
@@ -72,7 +72,7 @@ monophyly. All rows of this released resource are complete.
 ## Reproduction
 
 Use `taxaaudit upper-limits` as described in the main README. The released table
-is unchanged from the completed analysis; its input hashes and settings are in
-`upper_limits_provenance.json`. Input study trees and publication-level records
-are not redistributed here. The software can fit those probabilities for a
-user-supplied collection with `taxaaudit run`.
+is unchanged from the completed analysis. Its input collection and calculation
+settings are recorded in `upper_limits_provenance.json`. The study trees are
+available from [TimeTree](https://timetree.org/). The software can fit background
+and detection probabilities for a user-supplied collection with `taxaaudit run`.
