@@ -90,12 +90,58 @@ The most useful outputs are:
 catalog/supported_original_constraint_deletions.tsv
 catalog/constraint_changes.json
 catalog/all_group_evidence.tsv
+catalog/publication_evidence.tsv
 ```
 
 The first file is the catalog of flagged taxa. Its filename retains the earlier
 term `deletions` for compatibility. Excluding a flagged taxon's monophyly
 requirement does **not** remove any species from a tree or dataset. See
 [`catalog/README.md`](catalog/README.md) for the bundled results and file formats.
+
+## Upper confidence limits on recurrence
+
+After a run, calculate an upper confidence limit for every taxon with informative
+publications:
+
+```bash
+taxaaudit upper-limits --run outputs/my_scan --out outputs/my_scan/upper_limits
+```
+
+This uses the fitted background and detection probabilities saved by `run` in
+`catalog/publication_evidence.tsv`. It does not retrain the models or change the
+catalog of flagged taxa. It writes `taxaaudit_recurrence_upper_limits.tsv`, a
+summary, a settings file, and a checkpoint. Repeat the same command to resume
+an interrupted calculation; changed inputs or settings require a new output
+directory. Groups with no informative publications remain in the table with
+missing limits, not zero limits.
+
+For an existing collection of fitted observations, provide the inputs directly:
+
+```bash
+taxaaudit upper-limits \
+  --observations publication_evidence.tsv \
+  --universe all_group_evidence.tsv \
+  --catalog supported_original_constraint_deletions.tsv \
+  --out outputs/upper_limits
+```
+
+The observation table needs `taxid`, `name`, `rank`, `publication` (or `source`),
+`observed_failure`, `background_apparent_failure_probability`,
+`cross_study_detection_probability`, and `mean_sampled_members`. Each row is
+one informative observation of a taxon in a publication. The universe table
+needs `taxid`, `name`, and `rank`, and the flagged catalog needs `taxid`.
+The first two probability columns are fitted values, not raw conflict fractions.
+Older runs without `publication_evidence.tsv` need their saved fitted observations
+or a new run. Upper limits with nonuniform publication weights are not supported.
+
+The limits are approximate upper endpoints of **individual conditional 95%
+confidence sets** for the recurrence parameter. They condition on the fitted
+background/detection probabilities and independent publication outcomes. They
+are not probabilities of monophyly or a simultaneous confidence guarantee across
+all taxa. Low limits distinguish well-sampled groups with little evidence of
+recurrent contradiction from groups with too little evidence to constrain it.
+See the [released upper-limit data](catalog/UPPER_LIMITS.md) for interpretation,
+numerical settings, and column definitions.
 
 ## Optional study weights and higher ranks
 
@@ -143,6 +189,12 @@ Of 26,291 represented NCBI groups, 5,395 passed the publication-count filter
 and 516 were flagged. Of the represented groups, 18,109 had at least one
 informative publication. The released table includes exact NCBI identifiers,
 names, ranks, evidence counts, fitted recurrence, P values, and q values.
+
+The bundled [`catalog/recurrence_upper_limits.tsv`](catalog/recurrence_upper_limits.tsv)
+adds the upper-limit results for the same 26,291 taxa: 18,109 have informative
+publications and calculated limits, while 8,182 are explicitly marked as lacking
+informative publications. It includes membership in the unchanged 516-taxon
+flagged catalog.
 
 The study trees themselves are not redistributed. Users with those trees can
 reproduce the analysis using:

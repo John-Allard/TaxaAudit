@@ -1,0 +1,26 @@
+{
+  "resource": "recurrence_upper_limits.tsv",
+  "sha256": "e5cd39b8ae27fcc61e0b0d40d1bbe702831a680fc9a7e861ad959201ee15f87d",
+  "study_tree_files": 5865,
+  "source_publications": 5072,
+  "ncbi_taxonomy_download_date": "2026-07-22",
+  "represented_taxa": 26291,
+  "taxa_with_upper_limits": 18109,
+  "taxa_without_informative_publications": 8182,
+  "informative_publication_taxon_observations": 73181,
+  "flagged_taxa": 516,
+  "confidence_level": 0.95,
+  "exact_enumeration_max_publications": 12,
+  "monte_carlo_replicates": 4000,
+  "near_threshold_replicates": 20000,
+  "near_threshold_window": 0.015,
+  "seed": 20261105,
+  "coarse_grid_step": 0.025,
+  "fine_grid_step": 0.0025,
+  "finite_endpoint_padding": 0.0025,
+  "input_sha256": {
+    "fitted_publication_observations": "b9f4ea2b43022a990679d648b89bc97d4387618e95bdbb3bd8f4654d64ae46d0",
+    "all_group_evidence": "3ba0fd59ba186901120ba4106cc2da26a2b1ec41100112edc160aaf8649e6e98",
+    "flagged_taxa": "f182ef48261b56ef07662ae4f90afbc97d7af1f084143db0b0935f1a09da0f9f"
+  }
+}

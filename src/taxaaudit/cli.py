@@ -15,6 +15,26 @@ from .observations import (
     scan_trees,
 )
 from .taxonomy import Taxonomy, download_taxdump
+from .upper_limits import calculate_upper_limits
+
+
+def upper_limits(args: argparse.Namespace) -> None:
+    if args.run:
+        if any((args.observations, args.universe, args.catalog)):
+            raise ValueError("use --run or the three explicit input paths, not both")
+        catalog_dir = Path(args.run) / "catalog"
+        observations = catalog_dir / "publication_evidence.tsv"
+        universe = catalog_dir / "all_group_evidence.tsv"
+        catalog = catalog_dir / "supported_original_constraint_deletions.tsv"
+    else:
+        if not all((args.observations, args.universe, args.catalog)):
+            raise ValueError("provide --run or --observations, --universe and --catalog")
+        observations, universe, catalog = args.observations, args.universe, args.catalog
+    result = calculate_upper_limits(observations, universe, catalog, args.out,
+                                    seed=args.seed, replicates=args.replicates)
+    print(json.dumps({"output": str(Path(args.out).resolve()), "taxa": len(result),
+                      "taxa_with_bounds": int(result.upper_recurrence_limit_95.notna().sum())},
+                     indent=2))
 
 
 def add_run_arguments(parser: argparse.ArgumentParser) -> None:
@@ -130,6 +150,16 @@ def main(argv: list[str] | None = None) -> None:
     run_parser = subparsers.add_parser("run")
     add_run_arguments(run_parser)
     run_parser.set_defaults(func=run)
+    limits = subparsers.add_parser("upper-limits", help="calculate conditional 95% recurrence upper limits")
+    limits.add_argument("--run", help="completed taxaaudit run directory")
+    limits.add_argument("--observations", help="TSV of publication observations with fitted background/detection")
+    limits.add_argument("--universe", help="TSV of all represented taxa, including unobserved taxa")
+    limits.add_argument("--catalog", help="TSV of flagged taxa")
+    limits.add_argument("--out", required=True)
+    limits.add_argument("--seed", type=int, default=20261105)
+    limits.add_argument("--replicates", type=int, default=4000,
+                        help="initial Monte Carlo replicates, increased fivefold near the threshold")
+    limits.set_defaults(func=upper_limits)
     args = parser.parse_args(argv)
     args.func(args)
 

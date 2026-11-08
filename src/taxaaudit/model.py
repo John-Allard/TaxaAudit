@@ -297,6 +297,7 @@ def test_recurrence(
     fitted, background_metrics = adjust_background_for_sampling(
         fitted, background_folds, background_seed
     )
+    fitted.to_csv(output / "publication_evidence.tsv", sep="\t", index=False)
     rho_grid = np.linspace(0, 1, rho_grid_size)
     rows, cache = [], {}
     for taxid, frame in fitted.groupby("taxid", sort=False):
