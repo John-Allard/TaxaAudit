@@ -1,4 +1,6 @@
-# TaxaAudit: A statistical model of consensus in phylogenetics identifies non-monophyletic taxa
+# Taxa Audit
+
+## A statistical model of consensus in phylogenetics identifies non-monophyletic taxa
 
 TaxaAudit identifies taxonomic groups whose monophyly is repeatedly contradicted
 in a sample of published phylogenies, accounting for background taxonomic
@@ -29,19 +31,17 @@ together with its expected background conflict and the probability that its
 species sampling could expose a violation. Compatible but unresolved trees
 contribute no outcome.
 
-For publication $i$ and group $g$, $Y_{ig}=1$ denotes contradiction of monophyly
-and $Y_{ig}=0$ denotes recovered monophyly. The model is
+For publication i and group g, `Y_ig = 1` denotes contradiction of monophyly
+and `Y_ig = 0` denotes recovered monophyly. The model is
 
-$$
-\Pr(Y_{ig}=1\mid\rho_g)=f_{ig}+(1-f_{ig})D_{ig}\rho_g.
-$$
+![Probability of contradiction: Pr(Y_ig = 1 given rho_g) = f_ig + (1 - f_ig) D_ig rho_g.](docs/figures/model_equation.png)
 
-- $f_{ig}$ is the expected probability of background conflict, estimated from
+- `f_ig` is the expected probability of background conflict, estimated from
   other groups of the same rank in the publication and adjusted for focal-group
   sampling.
-- $D_{ig}$ is the probability that the publication's species sampling would
+- `D_ig` is the probability that the publication's species sampling would
   expose a real violation.
-- $\rho_g$ is the recurrence strength fitted for the group and shared across
+- `rho_g` is the recurrence strength fitted for the group and shared across
   its informative publications.
 
 The repository contains the complete fitting workflow. Fitted machine-learning
@@ -162,7 +162,7 @@ The limits summarize how strongly the available study trees constrain the
 possibility of recurrent contradiction. They help distinguish groups with
 substantial evidence and little contradiction from groups that are merely
 poorly sampled. They are approximate upper endpoints of **individual conditional
-95% confidence sets** for $\rho_g$, assuming the fitted background and detection
+95% confidence sets** for `rho_g`, assuming the fitted background and detection
 probabilities and independent publication outcomes. They are not probabilities
 of monophyly or a simultaneous confidence guarantee across all taxa.
 See the [released upper-limit data](catalog/UPPER_LIMITS.md) for interpretation,
