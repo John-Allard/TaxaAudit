@@ -1,11 +1,11 @@
-# Taxa Audit
+# TaxaAudit
 
-## A statistical model of consensus in phylogenetics identifies non-monophyletic taxa
+### TaxaAudit: A statistical model of consensus in phylogenetics identifies non-monophyletic taxa
 
 TaxaAudit identifies taxonomic groups whose monophyly is repeatedly contradicted
 in a sample of published phylogenies, accounting for background taxonomic
-conflict and species sampling. Its primary output is a **catalog of flagged
-taxa**: groups with statistical evidence of recurrent contradiction of monophyly.
+conflict and species sampling. Its primary output is a catalog of flagged
+taxa: groups with statistical evidence of recurrent contradiction of monophyly.
 The catalog helps researchers identify taxa whose monophyly should not be
 assumed in downstream analyses. It does not prescribe a replacement taxonomy.
 
@@ -20,16 +20,12 @@ assumed in downstream analyses. It does not prescribe a replacement taxonomy.
 
 ## Overview
 
-![Figure 1. TaxaAudit workflow, showing the overall analysis, the Balaenoptera example, and how a publication contributes to a group test.](docs/figures/figure_1.png)
-
-**Figure 1. Statistical identification of NCBI groups that are repeatedly
-contradicted by published phylogenies.** **A:** Overview of the analysis.
-**B:** The genus *Balaenoptera* followed through the procedure: 19 of 31
-informative publications contradicted its monophyly.
-**C:** A publication's support or contradiction of monophyly is considered
-together with its expected background conflict and the probability that its
-species sampling could expose a violation. Compatible but unresolved trees
-contribute no outcome.
+Published phylogenies differ in their species sampling and in the relationships
+they recover. TaxaAudit uses a statistical model to ask whether a taxonomic
+group's monophyly is contradicted repeatedly, beyond the conflict expected in
+those studies. It accounts for each publication's background conflict and the
+chance that its species sample would expose a violation, then tests for a
+recurring tendency shared across publications.
 
 For publication i and group g, `Y_ig = 1` denotes contradiction of monophyly
 and `Y_ig = 0` denotes recovered monophyly. The model is
@@ -48,6 +44,17 @@ The repository contains the complete fitting workflow. Fitted machine-learning
 objects are intentionally not committed: the background and detection models
 are cross-fitted for the supplied study collection and are reproducibly rebuilt
 from the input trees.
+
+![Figure 1. TaxaAudit workflow, showing the overall analysis, the Balaenoptera example, and how a publication contributes to a group test.](docs/figures/figure_1.png)
+
+Figure 1. Statistical identification of NCBI groups that are repeatedly
+contradicted by published phylogenies. (A) Overview of the analysis.
+(B) The genus *Balaenoptera* followed through the procedure: 19 of 31
+informative publications contradicted its monophyly.
+(C) A publication's support or contradiction of monophyly is considered
+together with its expected background conflict and the probability that its
+species sampling could expose a violation. Compatible but unresolved trees
+contribute no outcome.
 
 ## Installation
 
@@ -115,7 +122,7 @@ catalog/publication_evidence.tsv
 ```
 
 The first file is the catalog of flagged taxa. Its filename retains the earlier
-term `deletions` for compatibility. **Targeted exclusion** means omitting a
+term `deletions` for compatibility. Targeted exclusion means omitting a
 flagged taxon's exact monophyly requirement when evaluating the taxonomy or
 using it to guide tree inference. All species and the monophyly requirements
 of unflagged ancestors and descendants are retained. See
@@ -161,8 +168,8 @@ or a new run. Upper limits with nonuniform publication weights are not supported
 The limits summarize how strongly the available study trees constrain the
 possibility of recurrent contradiction. They help distinguish groups with
 substantial evidence and little contradiction from groups that are merely
-poorly sampled. They are approximate upper endpoints of **individual conditional
-95% confidence sets** for `rho_g`, assuming the fitted background and detection
+poorly sampled. They are approximate upper endpoints of individual conditional
+95% confidence sets for `rho_g`, assuming the fitted background and detection
 probabilities and independent publication outcomes. They are not probabilities
 of monophyly or a simultaneous confidence guarantee across all taxa.
 See the [released upper-limit data](catalog/UPPER_LIMITS.md) for interpretation,
@@ -196,7 +203,7 @@ The released results in [`catalog/`](catalog/) use:
 
 - 5,865 molecular study-tree files representing 5,072 source publications in
   the TimeTree literature collection;
-- the NCBI Taxonomy downloaded **22 July 2026**;
+- the NCBI Taxonomy downloaded 22 July 2026;
 - tests of named NCBI groups at the family level and below, including named
   unranked clades but excluding administrative placeholder groups;
 - 2,000 examples of taxonomic groups contradicted in complete study trees,
