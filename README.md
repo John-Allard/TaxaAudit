@@ -4,10 +4,10 @@
 published molecular phylogenies**
 
 TaxaAudit identifies NCBI taxonomic groups whose sampled members are
-recurrently contradicted as a clade across independent published molecular
+recurrently contradicted as a clade across published molecular
 phylogenies. It does **not** construct a replacement taxonomy. Its primary
-output is a conservative list of exact NCBI taxids for which monophyly should
-not be assumed without further evidence.
+output is a catalog of flagged taxa: NCBI groups with statistical evidence of
+recurrent contradiction of monophyly.
 
 The statistical model separates three quantities for NCBI group `g` in
 publication `i`:
@@ -63,7 +63,7 @@ taxaaudit run \
 Recognized filename extensions are `.nwk`, `.newick`, `.tree`, and `.tre`.
 By default, every file is treated as a separate publication. If a publication
 contributed more than one tree, supply a tab-separated manifest so that it
-still contributes only one independent result per taxonomic group:
+still contributes only one result per taxonomic group:
 
 ```text
 path	publication
@@ -92,6 +92,11 @@ catalog/constraint_changes.json
 catalog/all_group_evidence.tsv
 ```
 
+The first file is the catalog of flagged taxa. Its filename retains the earlier
+term `deletions` for compatibility. Excluding a flagged taxon's monophyly
+requirement does **not** remove any species from a tree or dataset. See
+[`catalog/README.md`](catalog/README.md) for the bundled results and file formats.
+
 ## Optional study weights and higher ranks
 
 The default analysis uses no external metadata-based study weights. Its background
@@ -110,8 +115,7 @@ end-to-end validation and was not used for the released catalog.
 To scan explicit higher ranks, supply for example
 `--ranks superfamily,order,class,phylum`. The default remains family and below.
 Rank-specific models and calibration should be checked before treating higher-rank
-results as a validated extension. See the
-`campaigns/higher-ranks-and-study-weights/` record for the separate pilot scan.
+results as a validated extension.
 
 ## Reproduce the released NCBI scan
 
@@ -131,11 +135,13 @@ The released catalog in [`catalog/`](catalog/) was generated from:
 - a 201-point grid for `rho` from 0 through 1;
 - 99,999 parametric-bootstrap replicates for groups passing the broad
   asymptotic screen (`q <= 0.30`);
-- an independently selected minimum of five informative publications;
-- Benjamini-Hochberg false-discovery-rate control at `q <= 0.05`.
+- a minimum of five informative publications, selected by the publication-count
+  filtering procedure;
+- Benjamini-Hochberg-adjusted `q <= 0.05` as the flagging threshold.
 
 Of 26,291 represented NCBI groups, 5,395 passed the publication-count filter
-and 516 were selected. The released table includes exact NCBI identifiers,
+and 516 were flagged. Of the represented groups, 18,109 had at least one
+informative publication. The released table includes exact NCBI identifiers,
 names, ranks, evidence counts, fitted recurrence, P values, and q values.
 
 The study trees themselves are not redistributed. Users with those trees can
@@ -163,12 +169,23 @@ taxaaudit run \
 
 ## Interpretation
 
-A selected taxid has reproducible evidence that its sampled members do not
-form an exclusive clade in the molecular phylogenetics literature. Selection
-supports withdrawing that exact monophyly assertion. It does not identify a
-unique replacement group, prove a particular biological mechanism, or
-establish that unselected groups are monophyletic. Groups with insufficient
+A flagged taxon has evidence of recurrent contradiction of monophyly in the
+sampled molecular phylogenetics literature. Flagging supports excluding that
+taxon's exact monophyly requirement in applications that rely on it. It does
+not identify a unique replacement group, prove a particular biological mechanism, or
+establish that unflagged groups are monophyletic. Groups with insufficient
 published sampling are evidence-limited rather than confirmed.
 
-See [`METHODS.md`](METHODS.md) for the algorithm and
-[`catalog/README.md`](catalog/README.md) for the released output.
+## Paper
+
+The accompanying manuscript is in preparation. A link to the paper and its
+supplementary methods will be added here when a public version is available.
+
+## Development
+
+Run the automated tests from the repository root:
+
+```bash
+pip install pytest
+python -m pytest
+```
